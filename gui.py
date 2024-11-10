@@ -3,6 +3,7 @@ from tkinter import ttk
 from datetime import datetime
 import requests
 import threading
+import speech_recognition as sr
 
 
 # Function to update the clock
@@ -36,9 +37,30 @@ def update_weather():
 
     root.after(60000, update_weather)# Schedule next weather update in 60 seconds
 
+def add_task_with_voice():
+    recognizer = sr.Recognizer()
+    mic = sr.Microphone(device_index=1)
+    with mic as source:
+        todo_entry.delete(0, tk.END)  # Clear existing text
+        todo_entry.insert(0, "Listening...")  # Show feedback
+        # recognizer.adjust_for_ambient_noise(source, duration=1)  # Adjusts to background noise
+        recognizer.pause_threshold = 0.8
+        try:
+            audio = recognizer.listen(source, timeout=5)
+            task = recognizer.recognize_google(audio)
+            todo_entry.delete(0, tk.END)  # Clear "Listening..." text
+            todo_entry.insert(0, task)  # Display recognized text
+            todo_listbox.insert(tk.END, task)  # Add to the to-do list
+        except sr.UnknownValueError:
+            todo_entry.delete(0, tk.END)
+            todo_entry.insert(0, "Could not understand audio")
+        except sr.RequestError:
+            todo_entry.delete(0, tk.END)
+            todo_entry.insert(0, "Network error")
+
 # Initialize the main window
 root = tk.Tk()
-root.title("Cute Real-Time Clock with To-Do List")
+root.title("SPROUT")
 root.geometry("700x500")
 root.configure(bg="#FFFBF2")  # Set a soft pastel background color
 
@@ -57,14 +79,15 @@ time_label.pack()
 update_time()
 
 # weather
-weather_frame = ttk.Frame(root, width=350, height=60, padding=10, style="TFrame")
+weather_frame = ttk.Frame(root, width=330, height=60, padding=10, style="TFrame")
 weather_frame.place(x=350, y=20)
-weather_label = tk.Label(weather_frame, font=('Helvetica', 20), bg='#2c3e50', fg='#ecf0f1')
-weather_label.pack(pady=5)
+weather_frame.pack_propagate(False)
+weather_label = tk.Label(weather_frame, font=("Comic Sans MS", 30, "bold"))
+weather_label.pack()
 update_weather()
 
 # Placeholder for a to-do list frame with similar styling
-todo_frame = ttk.Frame(root, width=350, height=460, padding=10, style="TFrame")
+todo_frame = ttk.Frame(root, width=330, height=400, padding=10, style="TFrame")
 todo_frame.place(x=350, y=100)
 
 # To-Do List Label
@@ -72,17 +95,19 @@ todo_label = ttk.Label(todo_frame, text="To-Do List", font=("Comic Sans MS", 14,
 todo_frame.pack_propagate(False)
 todo_label.pack()
 
-# Entry for new tasks
-todo_entry = tk.Entry(todo_frame, width=250, font=("Comic Sans MS", 10),bg="#FFFBF2")
+todo_entry = tk.Entry(todo_frame, width=25, font=("Comic Sans MS", 10), bg="#FFFBF2")
 todo_entry.pack(pady=5)
 
-# Buttons to add tasks with a pastel button background color
+# Voice-to-text button
+voice_button = tk.Button(todo_frame, text="Add with Voice", font=("Comic Sans MS", 10), bg="#FEC8D8", command=add_task_with_voice)
+voice_button.pack(pady=5)
+
+# Manual add button
 add_button = tk.Button(todo_frame, text="Add", font=("Comic Sans MS", 10), bg="#FEC8D8", command=lambda: todo_listbox.insert(tk.END, todo_entry.get()))
 add_button.pack(pady=5)
 
 # To-Do List display
-todo_listbox = tk.Listbox(todo_frame, width=300, height=400, font=("Comic Sans MS", 10), bg="#FFF0F5")
+todo_listbox = tk.Listbox(todo_frame, width=25, height=15, font=("Comic Sans MS", 10), bg="#FFF0F5")
 todo_listbox.pack(pady=5)
-
 # Main loop
 root.mainloop()
