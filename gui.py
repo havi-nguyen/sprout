@@ -43,14 +43,13 @@ def add_task_with_voice():
     with mic as source:
         todo_entry.delete(0, tk.END)  # Clear existing text
         todo_entry.insert(0, "Listening...")  # Show feedback
-        # recognizer.adjust_for_ambient_noise(source, duration=1)  # Adjusts to background noise
         recognizer.pause_threshold = 0.8
         try:
             audio = recognizer.listen(source, timeout=5)
             task = recognizer.recognize_google(audio)
             todo_entry.delete(0, tk.END)  # Clear "Listening..." text
             todo_entry.insert(0, task)  # Display recognized text
-            todo_listbox.insert(tk.END, task)  # Add to the to-do list
+            add_task(task)  # Add to the to-do list
         except sr.UnknownValueError:
             todo_entry.delete(0, tk.END)
             todo_entry.insert(0, "Could not understand audio")
@@ -58,6 +57,12 @@ def add_task_with_voice():
             todo_entry.delete(0, tk.END)
             todo_entry.insert(0, "Network error")
 
+def add_task(task):
+    task_frame = ttk.Frame(todo_frame, width=int(screen_width/2-40), height=40, padding=5, style="TFrame")
+    task_frame.pack(pady=5, anchor='w')  # Align to the left
+    task_label = ttk.Label(task_frame, text=task, style="TLabel")
+    task_label.pack(anchor='w')  # Align to the left
+    
 # Initialize the main window
 root = tk.Tk()
 root.title("SPROUT")
@@ -90,14 +95,14 @@ update_weather()
 
 # Placeholder for a to-do list frame with similar styling
 todo_frame = ttk.Frame(root, width=screen_width/2-20, height=screen_height-60, padding=10, style="TFrame")
-todo_frame.place(x=screen_width/2+10, y=100)
+todo_frame.place(x=screen_width/2+10, y=75)
 
 # To-Do List Label
-todo_label = ttk.Label(todo_frame, text="To-Do List", font=("Comic Sans MS", 14, "bold"))
+todo_label = ttk.Label(todo_frame, text="To-Do List", font=("Comic Sans MS", 12, "bold"))
 todo_frame.pack_propagate(False)
 todo_label.pack()
 
-todo_entry = tk.Entry(todo_frame, width=25, font=("Comic Sans MS", 10), bg="#FFFBF2")
+todo_entry = tk.Entry(todo_frame, width=int(screen_width/2-20), font=("Comic Sans MS", 10), bg="#FFFBF2")
 todo_entry.pack(pady=5)
 
 # Voice-to-text button
@@ -108,8 +113,9 @@ voice_button.pack(pady=5)
 add_button = tk.Button(todo_frame, text="Add", font=("Comic Sans MS", 10), bg="#FEC8D8", command=lambda: todo_listbox.insert(tk.END, todo_entry.get()))
 add_button.pack(pady=5)
 
-# To-Do List display
-todo_listbox = tk.Listbox(todo_frame, width=int(screen_width/2-20), height=int(screen_height-100), font=("Comic Sans MS", 10), bg="#FFF0F5")
-todo_listbox.pack(pady=5)
+
+
+# Modify the manual add button command to show the listbox after adding a task
+add_button.config(command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
 # Main loop
 root.mainloop()
