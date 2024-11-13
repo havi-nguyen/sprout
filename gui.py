@@ -61,16 +61,18 @@ def add_task_with_voice():
 # Initialize the main window
 root = tk.Tk()
 root.title("SPROUT")
-root.geometry("700x500")
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+root.geometry(f"{screen_width}x{screen_height}")
 root.configure(bg="#FFFBF2")  # Set a soft pastel background color
 
 # Style settings
 style = ttk.Style()
 style.configure("TFrame", background="#FFE4E1", borderwidth=5, relief="groove")
-style.configure("TLabel", background="#FFE4E1", font=("Comic Sans MS", 30, "bold"))
+style.configure("TLabel", background="#FFE4E1", font=("Comic Sans MS", 15, "bold"))
 
 # Create a frame with custom colors and rounded corners for the clock
-time_frame = ttk.Frame(root, width=300, height=60,padding=10, style="TFrame")
+time_frame = ttk.Frame(root, width=screen_width/2-20, height=40,padding=10, style="TFrame")
 time_frame.place(x=20, y=20)
 time_frame.pack_propagate(False)
 # Real-time clock display inside the frame
@@ -79,16 +81,16 @@ time_label.pack()
 update_time()
 
 # weather
-weather_frame = ttk.Frame(root, width=330, height=60, padding=10, style="TFrame")
-weather_frame.place(x=350, y=20)
+weather_frame = ttk.Frame(root, width=screen_width/2-20, height=40, padding=10, style="TFrame")
+weather_frame.place(x=screen_width/2+10, y=20)
 weather_frame.pack_propagate(False)
-weather_label = tk.Label(weather_frame, font=("Comic Sans MS", 30, "bold"))
+weather_label = tk.Label(weather_frame, font=("Comic Sans MS", 15, "bold"))
 weather_label.pack()
 update_weather()
 
 # Placeholder for a to-do list frame with similar styling
-todo_frame = ttk.Frame(root, width=330, height=400, padding=10, style="TFrame")
-todo_frame.place(x=350, y=100)
+todo_frame = ttk.Frame(root, width=screen_width/2-20, height=screen_height-60, padding=10, style="TFrame")
+todo_frame.place(x=screen_width/2+10, y=100)
 
 # To-Do List Label
 todo_label = ttk.Label(todo_frame, text="To-Do List", font=("Comic Sans MS", 14, "bold"))
@@ -107,7 +109,7 @@ add_button = tk.Button(todo_frame, text="Add", font=("Comic Sans MS", 10), bg="#
 add_button.pack(pady=5)
 
 # To-Do List display
-todo_listbox = tk.Listbox(todo_frame, width=25, height=15, font=("Comic Sans MS", 10), bg="#FFF0F5")
+todo_listbox = tk.Listbox(todo_frame, width=int(screen_width/2-20), height=int(screen_height-100), font=("Comic Sans MS", 10), bg="#FFF0F5")
 todo_listbox.pack(pady=5)
 # Main loop
 root.mainloop()
