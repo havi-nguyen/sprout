@@ -4,6 +4,11 @@ from datetime import datetime
 import requests
 import threading
 import speech_recognition as sr
+import re
+import spacy
+
+# Load the spaCy model
+nlp = spacy.load("en_core_web_sm")
 
 
 # Function to update the clock
@@ -39,7 +44,7 @@ def update_weather():
 
 def add_task_with_voice():
     recognizer = sr.Recognizer()
-    mic = sr.Microphone(device_index=1)
+    mic = sr.Microphone(device_index=3)
     with mic as source:
         todo_entry.delete(0, tk.END)  # Clear existing text
         todo_entry.insert(0, "Listening...")  # Show feedback
@@ -57,13 +62,53 @@ def add_task_with_voice():
             todo_entry.delete(0, tk.END)
             todo_entry.insert(0, "Network error")
 
+# def add_task(task):
+#     # Identify time and date keywords in the task
+#     doc = nlp(task)
+#     time_keywords = re.findall(r'\b\d{1,2}:\d{2}\b', task)
+#     date_keywords = re.findall(r'\b\d{1,2}/\d{1,2}/\d{2,4}\b', task)
+#     weekday_keywords = re.findall(r'\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b', task, re.IGNORECASE)
+#     # Create an array to store identified elements
+#     identified_elements = [date_keywords, weekday_keywords, time_keywords, task]
+    
+#     # Remove identified keywords from the task
+#     for keyword in date_keywords + weekday_keywords + time_keywords:
+#         task = task.replace(keyword, '').strip()
+    
+#     # Format the task label text
+#     label_text = " ".join(date_keywords + weekday_keywords + time_keywords) + "           " + task
+    
+#     task_frame = ttk.Frame(todo_frame, width=int(screen_width/2-40), height=40, padding=5, style="TFrame")
+#     task_frame.pack(pady=5, anchor='w')  # Align to the left
+#     task_label = ttk.Label(task_frame, text=label_text, style="TLabel")
+#     task_label.pack(anchor='w')  # Align to the left
+
 def add_task(task):
+    # Use spaCy to identify entities in the task
+    doc = nlp(task)
+    time_keywords = [ent.text for ent in doc.ents if ent.label_ == "TIME"]
+    date_keywords = [ent.text for ent in doc.ents if ent.label_ == "DATE"]
+    # weekday_keywords = [ent.text for ent in doc.ents if ent.label_ == "DATE" and ent.text.lower() in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]]
+    
+    # Combine all identified keywords
+    all_keywords = date_keywords + time_keywords
+    for keyword in date_keywords +  time_keywords:
+        task = task.replace(keyword, '').strip()
+    
+    # Remove identified keywords and their prepositions from the task
+    for token in doc:
+        if (token.dep_ == 'prep'):
+            task = task.replace(token.text, '').strip()
+    
+    # Format the task label text
+    label_text = " ".join(all_keywords) + "           " + task
+    
     task_frame = ttk.Frame(todo_frame, width=int(screen_width/2-40), height=40, padding=5, style="TFrame")
     task_frame.pack(pady=5, anchor='w')  # Align to the left
-    task_label = ttk.Label(task_frame, text=task, style="TLabel")
+    task_label = ttk.Label(task_frame, text=label_text, style="TLabel")
     task_label.pack(anchor='w')  # Align to the left
-    
-# Initialize the main window
+
+
 root = tk.Tk()
 root.title("SPROUT")
 screen_width = root.winfo_screenwidth()
