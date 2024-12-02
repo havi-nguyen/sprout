@@ -135,21 +135,82 @@ def add_task(task):
     completed_checkbox = ttk.Checkbutton(task_frame, variable=completed_var)
     completed_checkbox.pack(side='left', padx=(30, 0))  # Add space between text and checkbox
 
-def animate_creature():
-    x1, y1, x2, y2 = canvas.coords(creature)
-    if x1 < 10 or x2 > 100:
-        animate_creature.direction *= -1
-    canvas.move(creature, animate_creature.direction, 0)
-    root.after(50, animate_creature)
-
-animate_creature.direction = 1
-
 root = tk.Tk()
 root.title("SPROUT")
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 root.geometry(f"{screen_width}x{screen_height}")
 root.configure(bg="#FFFBF2")  # Set a soft pastel background color
+
+# Placeholder for a to-do list frame with similar styling
+todo_frame = ttk.Frame(root, width=screen_width/2-20, height=screen_height-60, padding=10, style="TFrame")
+todo_frame.place(x=screen_width/2+10, y=75)
+
+# To-Do List Label
+todo_label = ttk.Label(todo_frame, text="To-Do List", font=("Comic Sans MS", 12, "bold"))
+todo_frame.pack_propagate(False)
+todo_label.pack()
+
+todo_entry = tk.Entry(todo_frame, width=int(screen_width/2-20), font=("Comic Sans MS", 10), bg="#FFFBF2")
+todo_entry.pack(pady=5)
+
+# Voice-to-text button
+voice_button = tk.Button(todo_frame, text="Add with Voice", font=("Comic Sans MS", 10), bg="#FEC8D8", command=add_task_with_voice)
+voice_button.pack(pady=5)
+
+# Manual add button
+add_button = tk.Button(todo_frame, text="Add", font=("Comic Sans MS", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
+add_button.pack(pady=5)
+
+
+canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness=0)
+canvas.place(x=10, y=screen_height - 200)
+creature_image_index = 0
+
+creature_images = [
+    tk.PhotoImage(file="/Users/havi/Desktop/repos/sprout/creature1.png"),
+    tk.PhotoImage(file="/Users/havi/Desktop/repos/sprout/creature2.png"),
+    tk.PhotoImage(file="/Users/havi/Desktop/repos/sprout/creature3.png")
+]
+
+image_width = creature_images[0].width()
+image_height = creature_images[0].height()
+
+canvas = tk.Canvas(root, width=image_width, height=image_height, bg="#FFFBF2", highlightthickness=0)
+canvas.place(x=10, y=screen_height - 1100)
+
+# Add the first frame of the creature animation
+creature = canvas.create_image(image_width // 2, image_height // 2, image=creature_images[creature_image_index])
+
+# Animate the creature with images
+def animate_creature_with_images():
+    global creature_image_index
+
+    # Update the image displayed
+    creature_image_index = (creature_image_index + 1) % len(creature_images)
+    canvas.itemconfig(creature, image=creature_images[creature_image_index])
+
+    # Get the current coordinates of the creature (center point)
+    x, y = canvas.coords(creature)
+
+    # Reverse direction if the creature hits the canvas bounds
+    if x - image_width // 2 < 0 or x + image_width // 2 > canvas.winfo_width():
+        animate_creature_with_images.dx *= -1
+    if y - image_height // 2 < 0 or y + image_height // 2 > canvas.winfo_height():
+        animate_creature_with_images.dy *= -1
+
+    # Move the creature
+    canvas.move(creature, animate_creature_with_images.dx, animate_creature_with_images.dy)
+
+    # Schedule the next frame
+    root.after(1300, animate_creature_with_images)
+
+# Initialize movement
+animate_creature_with_images.dx = 5  # Adjust speed if needed
+animate_creature_with_images.dy = 5
+
+# Start the animation
+animate_creature_with_images()
 
 # Style settings
 style = ttk.Style()
@@ -173,43 +234,19 @@ weather_label = tk.Label(weather_frame, font=("Comic Sans MS", 15, "bold"))
 weather_label.pack()
 update_weather()
 
-# Creature animation 
-canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness=0)
-canvas.place(x=10, y=screen_height - 110)
+# # Creature animation 
+# canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness=0)
+# canvas.place(x=10, y=screen_height - 110)
 
-# Draw a simple creature (e.g., a circle with eyes)
-creature = canvas.create_oval(20, 20, 80, 80, fill="blue", outline="black")
-eye1 = canvas.create_oval(35, 35, 45, 45, fill="white")
-eye2 = canvas.create_oval(55, 35, 65, 45, fill="white")
-pupil1 = canvas.create_oval(40, 40, 43, 43, fill="black")
-pupil2 = canvas.create_oval(60, 40, 63, 43, fill="black")
+# # Draw a simple creature (e.g., a circle with eyes)
+# creature = canvas.create_oval(20, 20, 80, 80, fill="blue", outline="black")
+# eye1 = canvas.create_oval(35, 35, 45, 45, fill="white")
+# eye2 = canvas.create_oval(55, 35, 65, 45, fill="white")
+# pupil1 = canvas.create_oval(40, 40, 43, 43, fill="black")
+# pupil2 = canvas.create_oval(60, 40, 63, 43, fill="black")
 
-# Start the animation
-animate_creature()
-
-# Placeholder for a to-do list frame with similar styling
-todo_frame = ttk.Frame(root, width=screen_width/2-20, height=screen_height-60, padding=10, style="TFrame")
-todo_frame.place(x=screen_width/2+10, y=75)
-
-# To-Do List Label
-todo_label = ttk.Label(todo_frame, text="To-Do List", font=("Comic Sans MS", 12, "bold"))
-todo_frame.pack_propagate(False)
-todo_label.pack()
-
-todo_entry = tk.Entry(todo_frame, width=int(screen_width/2-20), font=("Comic Sans MS", 10), bg="#FFFBF2")
-todo_entry.pack(pady=5)
-
-# Voice-to-text button
-voice_button = tk.Button(todo_frame, text="Add with Voice", font=("Comic Sans MS", 10), bg="#FEC8D8", command=add_task_with_voice)
-voice_button.pack(pady=5)
-
-
-
-# Manual add button
-add_button = tk.Button(todo_frame, text="Add", font=("Comic Sans MS", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
-add_button.pack(pady=5)
-
-
+# # Start the animation
+# animate_creature()
 
 # # Modify the manual add button command to show the listbox after adding a task
 # add_button.config(command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
