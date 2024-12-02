@@ -6,6 +6,7 @@ import threading
 import speech_recognition as sr
 import re
 import spacy
+import pyttsx3
 
 # Load the spaCy model
 nlp = spacy.load("en_core_web_sm")
@@ -44,7 +45,8 @@ def update_weather():
 
 def add_task_with_voice():
     recognizer = sr.Recognizer()
-    mic = sr.Microphone(device_index=3)
+    # mic = sr.Microphone(device_index=3)
+    mic = sr.Microphone()
     with mic as source:
         todo_entry.delete(0, tk.END)  # Clear existing text
         todo_entry.insert(0, "Listening...")  # Show feedback
@@ -62,26 +64,47 @@ def add_task_with_voice():
             todo_entry.delete(0, tk.END)
             todo_entry.insert(0, "Network error")
 
-# def add_task(task):
-#     # Identify time and date keywords in the task
-#     doc = nlp(task)
-#     time_keywords = re.findall(r'\b\d{1,2}:\d{2}\b', task)
-#     date_keywords = re.findall(r'\b\d{1,2}/\d{1,2}/\d{2,4}\b', task)
-#     weekday_keywords = re.findall(r'\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b', task, re.IGNORECASE)
-#     # Create an array to store identified elements
-#     identified_elements = [date_keywords, weekday_keywords, time_keywords, task]
+def listen_for_keyword(keyword):
+    recognizer = sr.Recognizer()
+    mic = sr.Microphone()
     
-#     # Remove identified keywords from the task
-#     for keyword in date_keywords + weekday_keywords + time_keywords:
-#         task = task.replace(keyword, '').strip()
-    
-#     # Format the task label text
-#     label_text = " ".join(date_keywords + weekday_keywords + time_keywords) + "           " + task
-    
-#     task_frame = ttk.Frame(todo_frame, width=int(screen_width/2-40), height=40, padding=5, style="TFrame")
-#     task_frame.pack(pady=5, anchor='w')  # Align to the left
-#     task_label = ttk.Label(task_frame, text=label_text, style="TLabel")
-#     task_label.pack(anchor='w')  # Align to the left
+    with mic as source:
+        print("Adjusting for ambient noise...")
+        recognizer.adjust_for_ambient_noise(source)
+
+    print("Listening for keyword...")
+    while True:
+        with mic as source:
+            try:
+                # Capture audio
+                audio = recognizer.listen(source, timeout=5)
+                command = recognizer.recognize_google(audio).lower()
+                print(f"You said: {command}")
+
+                # Trigger the task addition function when "calendar" is heard
+                if keyword.lower() in command:
+                    print("Keyword detected. Listening for 5 seconds...")
+                    start_time = datetime.now()
+                    while (datetime.now() - start_time).seconds < 5:
+                        try:
+                            audio = recognizer.listen(source, timeout=5)
+                            task_command = recognizer.recognize_google(audio).lower()
+                            print(f"Task command: {task_command}")
+                            add_task(task_command)
+                            break
+                        except sr.UnknownValueError:
+                            print("Sorry, I could not understand the audio.")
+                        except sr.RequestError as e:
+                            print(f"Error with speech recognition service: {e}")
+                        except Exception as ex:
+                            print(f"Unexpected error: {ex}")
+                    break
+            except sr.UnknownValueError:
+                print("Sorry, I could not understand the audio.")
+            except sr.RequestError as e:
+                print(f"Error with speech recognition service: {e}")
+            except Exception as ex:
+                print(f"Unexpected error: {ex}")
 
 def add_task(task):
     # Use spaCy to identify entities in the task
@@ -106,8 +129,20 @@ def add_task(task):
     task_frame = ttk.Frame(todo_frame, width=int(screen_width/2-40), height=40, padding=5, style="TFrame")
     task_frame.pack(pady=5, anchor='w')  # Align to the left
     task_label = ttk.Label(task_frame, text=label_text, style="TLabel")
-    task_label.pack(anchor='w')  # Align to the left
+    task_label.pack(side='left', anchor='w')  # Align to the left
+    # Add a checkbox to mark the task as completed
+    completed_var = tk.BooleanVar()
+    completed_checkbox = ttk.Checkbutton(task_frame, variable=completed_var)
+    completed_checkbox.pack(side='left', padx=(30, 0))  # Add space between text and checkbox
 
+def animate_creature():
+    x1, y1, x2, y2 = canvas.coords(creature)
+    if x1 < 10 or x2 > 100:
+        animate_creature.direction *= -1
+    canvas.move(creature, animate_creature.direction, 0)
+    root.after(50, animate_creature)
+
+animate_creature.direction = 1
 
 root = tk.Tk()
 root.title("SPROUT")
@@ -138,6 +173,20 @@ weather_label = tk.Label(weather_frame, font=("Comic Sans MS", 15, "bold"))
 weather_label.pack()
 update_weather()
 
+# Creature animation 
+canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness=0)
+canvas.place(x=10, y=screen_height - 110)
+
+# Draw a simple creature (e.g., a circle with eyes)
+creature = canvas.create_oval(20, 20, 80, 80, fill="blue", outline="black")
+eye1 = canvas.create_oval(35, 35, 45, 45, fill="white")
+eye2 = canvas.create_oval(55, 35, 65, 45, fill="white")
+pupil1 = canvas.create_oval(40, 40, 43, 43, fill="black")
+pupil2 = canvas.create_oval(60, 40, 63, 43, fill="black")
+
+# Start the animation
+animate_creature()
+
 # Placeholder for a to-do list frame with similar styling
 todo_frame = ttk.Frame(root, width=screen_width/2-20, height=screen_height-60, padding=10, style="TFrame")
 todo_frame.place(x=screen_width/2+10, y=75)
@@ -154,13 +203,17 @@ todo_entry.pack(pady=5)
 voice_button = tk.Button(todo_frame, text="Add with Voice", font=("Comic Sans MS", 10), bg="#FEC8D8", command=add_task_with_voice)
 voice_button.pack(pady=5)
 
+
+
 # Manual add button
-add_button = tk.Button(todo_frame, text="Add", font=("Comic Sans MS", 10), bg="#FEC8D8", command=lambda: todo_listbox.insert(tk.END, todo_entry.get()))
+add_button = tk.Button(todo_frame, text="Add", font=("Comic Sans MS", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
 add_button.pack(pady=5)
 
 
 
-# Modify the manual add button command to show the listbox after adding a task
-add_button.config(command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
+# # Modify the manual add button command to show the listbox after adding a task
+# add_button.config(command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
 # Main loop
+keyword_thread = threading.Thread(target=listen_for_keyword, args=("add calendar",), daemon=True)
+keyword_thread.start()
 root.mainloop()
