@@ -78,31 +78,34 @@ def listen_for_keyword(keyword):
 
     print("Listening for keyword...")
     while True:
-        with mic as source:
+        
             try:
+                with mic as source:
                 # Capture audio
-                audio = recognizer.listen(source, timeout=5)
-                command = recognizer.recognize_google(audio).lower()
-                print(f"You said: {command}")
+                    audio = recognizer.listen(source, timeout=5)
+                    command = recognizer.recognize_google(audio).lower()
+                    print(f"You said: {command}")
 
-                # Trigger the task addition function when "calendar" is heard
-                if keyword.lower() in command:
-                    print("Keyword detected. Listening for 5 seconds...")
-                    start_time = datetime.now()
-                    while (datetime.now() - start_time).seconds < 5:
-                        try:
-                            audio = recognizer.listen(source, timeout=5)
-                            task_command = recognizer.recognize_google(audio).lower()
-                            print(f"Task command: {task_command}")
-                            add_task(task_command)
-                            break
-                        except sr.UnknownValueError:
-                            print("Sorry, I could not understand the audio.")
-                        except sr.RequestError as e:
-                            print(f"Error with speech recognition service: {e}")
-                        except Exception as ex:
-                            print(f"Unexpected error: {ex}")
-                    continue  # Skip to the next iteration of the outer while loop
+                    # Trigger the task addition function when "calendar" is heard
+                    if keyword.lower() in command:
+                        print("Keyword detected. Listening for 5 seconds...")
+                        start_time = datetime.now()
+                        while (datetime.now() - start_time).seconds < 5:
+                            try:
+                                audio = recognizer.listen(source, timeout=5)
+                                task_command = recognizer.recognize_google(audio).lower()
+                                print(f"Task command: {task_command}")
+                                add_task(task_command)
+                                break
+                            except sr.UnknownValueError:
+                                print("Sorry, I could not understand the audio.")
+                            except sr.RequestError as e:
+                                print(f"Error with speech recognition service: {e}")
+                            except Exception as ex:
+                                print(f"Unexpected error: {ex}")
+                        continue  # Skip to the next iteration of the outer while loop
+            except AssertionError as e:
+                print(f"AssertionError: {e}")
             except sr.UnknownValueError:
                 print("Sorry, I could not understand the audio.")
             except sr.RequestError as e:
