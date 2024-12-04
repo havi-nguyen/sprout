@@ -12,15 +12,6 @@ from nltk import pos_tag, ne_chunk
 from nltk.tree import Tree
 import pyttsx3
 
-nltk.download('punkt')  # For word_tokenize
-nltk.download('averaged_perceptron_tagger')  # For pos_tag
-nltk.download('maxent_ne_chunker')  # For ne_chunk
-nltk.download('words')  # For ne_chunk
-nltk.download('punkt_tab')
-nltk.download('averaged_perceptron_tagger_eng')
-nltk.download('maxent_ne_chunker_eng')
-nltk.download('words_eng')
-nltk.download('maxent_ne_chunker_tab')
 
 
 
@@ -189,9 +180,9 @@ canvas.place(x=10, y=screen_height - 200)
 creature_image_index = 0
 
 creature_images = [
-    tk.PhotoImage(file="/Users/havi/Desktop/repos/sprout/creature1.png"),
-    tk.PhotoImage(file="/Users/havi/Desktop/repos/sprout/creature2.png"),
-    tk.PhotoImage(file="/Users/havi/Desktop/repos/sprout/creature3.png")
+    tk.PhotoImage(file="creature1.png"),
+    tk.PhotoImage(file="creature2.png"),
+    tk.PhotoImage(file="creature3.png")
 ]
 
 image_width = creature_images[0].width()
