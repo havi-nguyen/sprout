@@ -5,11 +5,23 @@ import requests
 import threading
 import speech_recognition as sr
 import re
-import spacy
+
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk import pos_tag, ne_chunk
+from nltk.tree import Tree
 import pyttsx3
 
-# Load the spaCy model
-nlp = spacy.load("en_core_web_sm")
+nltk.download('punkt')  # For word_tokenize
+nltk.download('averaged_perceptron_tagger')  # For pos_tag
+nltk.download('maxent_ne_chunker')  # For ne_chunk
+nltk.download('words')  # For ne_chunk
+nltk.download('punkt_tab')
+nltk.download('averaged_perceptron_tagger_eng')
+nltk.download('maxent_ne_chunker_eng')
+nltk.download('words_eng')
+nltk.download('maxent_ne_chunker_tab')
+
 
 
 # Function to update the clock
@@ -45,8 +57,8 @@ def update_weather():
 
 def add_task_with_voice():
     recognizer = sr.Recognizer()
-    # mic = sr.Microphone(device_index=3)
-    mic = sr.Microphone()
+    mic = sr.Microphone(device_index=3)
+    # mic = sr.Microphone()
     with mic as source:
         todo_entry.delete(0, tk.END)  # Clear existing text
         todo_entry.insert(0, "Listening...")  # Show feedback
@@ -107,21 +119,30 @@ def listen_for_keyword(keyword):
                 print(f"Unexpected error: {ex}")
 
 def add_task(task):
-    # Use spaCy to identify entities in the task
-    doc = nlp(task)
-    time_keywords = [ent.text for ent in doc.ents if ent.label_ == "TIME"]
-    date_keywords = [ent.text for ent in doc.ents if ent.label_ == "DATE"]
-    # weekday_keywords = [ent.text for ent in doc.ents if ent.label_ == "DATE" and ent.text.lower() in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]]
+    # Use NLTK to identify entities in the task
+    tokens = word_tokenize(task)
+    tagged = pos_tag(tokens)
+    named_entities = ne_chunk(tagged)
+    
+    time_keywords = []
+    date_keywords = []
+    
+    for subtree in named_entities:
+        if isinstance(subtree, nltk.Tree):
+            if subtree.label() == 'TIME':
+                time_keywords.append(" ".join([token for token, pos in subtree.leaves()]))
+            elif subtree.label() == 'DATE':
+                date_keywords.append(" ".join([token for token, pos in subtree.leaves()]))
     
     # Combine all identified keywords
     all_keywords = date_keywords + time_keywords
-    for keyword in date_keywords +  time_keywords:
+    for keyword in all_keywords:
         task = task.replace(keyword, '').strip()
     
     # Remove identified keywords and their prepositions from the task
-    for token in doc:
-        if (token.dep_ == 'prep'):
-            task = task.replace(token.text, '').strip()
+    for token, pos in tagged:
+        if pos == 'IN':  # 'IN' is the POS tag for prepositions
+            task = task.replace(token, '').strip()
     
     # Format the task label text
     label_text = " ".join(all_keywords) + "           " + task
