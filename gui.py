@@ -69,6 +69,7 @@ def add_task_with_voice():
 
 def listen_for_keyword(keyword):
     recognizer = sr.Recognizer()
+    # mic = sr.Microphone(device_index=3)
     mic = sr.Microphone()
     
     with mic as source:
@@ -101,7 +102,7 @@ def listen_for_keyword(keyword):
                             print(f"Error with speech recognition service: {e}")
                         except Exception as ex:
                             print(f"Unexpected error: {ex}")
-                    break
+                    continue  # Skip to the next iteration of the outer while loop
             except sr.UnknownValueError:
                 print("Sorry, I could not understand the audio.")
             except sr.RequestError as e:
@@ -263,6 +264,6 @@ update_weather()
 # # Modify the manual add button command to show the listbox after adding a task
 # add_button.config(command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
 # Main loop
-keyword_thread = threading.Thread(target=listen_for_keyword, args=("add calendar",), daemon=True)
+keyword_thread = threading.Thread(target=listen_for_keyword, args=("calendar",), daemon=True)
 keyword_thread.start()
 root.mainloop()
