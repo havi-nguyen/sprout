@@ -69,8 +69,8 @@ def add_task_with_voice():
 
 def listen_for_keyword(keyword):
     recognizer = sr.Recognizer()
-    # mic = sr.Microphone(device_index=3)
-    mic = sr.Microphone()
+    mic = sr.Microphone(device_index=3)
+    # mic = sr.Microphone()
     
     with mic as source:
         print("Adjusting for ambient noise...")
