@@ -48,7 +48,7 @@ def update_weather():
 
 def add_task_with_voice():
     recognizer = sr.Recognizer()
-    mic = sr.Microphone(device_index=3)
+    mic = sr.Microphone(device_index=1)
     # mic = sr.Microphone()
     with mic as source:
         todo_entry.delete(0, tk.END)  # Clear existing text
@@ -69,7 +69,7 @@ def add_task_with_voice():
 
 def listen_for_keyword(keyword):
     recognizer = sr.Recognizer()
-    mic = sr.Microphone(device_index=3)
+    mic = sr.Microphone(device_index=1)
     # # mic = sr.Microphone()
     
     # with mic as source:
