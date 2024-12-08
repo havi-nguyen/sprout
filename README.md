@@ -1,6 +1,6 @@
 # sprout
 
-###installs when rewriting sd  
+### installs when rewriting sd  
 pip install requests  
 pip install SpeechRecognition  
 sudo apt-get install portaudio19-dev  
