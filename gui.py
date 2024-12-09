@@ -72,6 +72,9 @@ def listen_for_keyword(keyword):
     # mic = sr.Microphone(device_index=1)
     mic = sr.Microphone()
     
+    if mic:
+        print("Microphone initialized.")
+    
     with mic as source:
         print("Adjusting for ambient noise...")
         recognizer.adjust_for_ambient_noise(source)
