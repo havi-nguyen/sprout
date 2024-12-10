@@ -10,7 +10,6 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk import pos_tag, ne_chunk
 from nltk.tree import Tree
-import pyttsx3
 
 
 
@@ -151,6 +150,28 @@ def add_task(task):
     completed_checkbox = ttk.Checkbutton(task_frame, variable=completed_var)
     completed_checkbox.pack(side='left', padx=(30, 0))  # Add space between text and checkbox
 
+def animate_creature_with_images():
+    global creature_image_index
+
+    # Update the image displayed
+    creature_image_index = (creature_image_index + 1) % len(creature_images)
+    canvas.itemconfig(creature, image=creature_images[creature_image_index])
+
+    # Get the current coordinates of the creature (center point)
+    x, y = canvas.coords(creature)
+
+    # Reverse direction if the creature hits the canvas bounds
+    if x - image_width // 2 < 0 or x + image_width // 2 > canvas.winfo_width():
+        animate_creature_with_images.dx *= -1
+    if y - image_height // 2 < 0 or y + image_height // 2 > canvas.winfo_height():
+        animate_creature_with_images.dy *= -1
+
+    # Move the creature
+    canvas.move(creature, animate_creature_with_images.dx, animate_creature_with_images.dy)
+
+    # Schedule the next frame
+    root.after(1300, animate_creature_with_images)
+
 root = tk.Tk()
 root.title("SPROUT")
 screen_width = root.winfo_screenwidth()
@@ -183,43 +204,24 @@ canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness
 canvas.place(x=10, y=screen_height - 200)
 creature_image_index = 0
 
+# Load and rescale the creature images
 creature_images = [
-    tk.PhotoImage(file="creature1.png"),
-    tk.PhotoImage(file="creature2.png"),
-    tk.PhotoImage(file="creature3.png")
+    tk.PhotoImage(file="creature1.png").subsample(4, 4),
+    tk.PhotoImage(file="creature2.png").subsample(4, 4),
+    tk.PhotoImage(file="creature3.png").subsample(4, 4)
 ]
 
 image_width = creature_images[0].width()
 image_height = creature_images[0].height()
 
 canvas = tk.Canvas(root, width=image_width, height=image_height, bg="#FFFBF2", highlightthickness=0)
-canvas.place(x=10, y=screen_height - 1100)
+canvas.place(x=10, y=screen_height - image_height)
 
 # Add the first frame of the creature animation
 creature = canvas.create_image(image_width // 2, image_height // 2, image=creature_images[creature_image_index])
 
 # Animate the creature with images
-def animate_creature_with_images():
-    global creature_image_index
 
-    # Update the image displayed
-    creature_image_index = (creature_image_index + 1) % len(creature_images)
-    canvas.itemconfig(creature, image=creature_images[creature_image_index])
-
-    # Get the current coordinates of the creature (center point)
-    x, y = canvas.coords(creature)
-
-    # Reverse direction if the creature hits the canvas bounds
-    if x - image_width // 2 < 0 or x + image_width // 2 > canvas.winfo_width():
-        animate_creature_with_images.dx *= -1
-    if y - image_height // 2 < 0 or y + image_height // 2 > canvas.winfo_height():
-        animate_creature_with_images.dy *= -1
-
-    # Move the creature
-    canvas.move(creature, animate_creature_with_images.dx, animate_creature_with_images.dy)
-
-    # Schedule the next frame
-    root.after(1300, animate_creature_with_images)
 
 # Initialize movement
 animate_creature_with_images.dx = 5  # Adjust speed if needed
@@ -250,23 +252,6 @@ weather_label = tk.Label(weather_frame, font=("Comic Sans MS", 15, "bold"))
 weather_label.pack()
 update_weather()
 
-# # Creature animation 
-# canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness=0)
-# canvas.place(x=10, y=screen_height - 110)
-
-# # Draw a simple creature (e.g., a circle with eyes)
-# creature = canvas.create_oval(20, 20, 80, 80, fill="blue", outline="black")
-# eye1 = canvas.create_oval(35, 35, 45, 45, fill="white")
-# eye2 = canvas.create_oval(55, 35, 65, 45, fill="white")
-# pupil1 = canvas.create_oval(40, 40, 43, 43, fill="black")
-# pupil2 = canvas.create_oval(60, 40, 63, 43, fill="black")
-
-# # Start the animation
-# animate_creature()
-
-# # Modify the manual add button command to show the listbox after adding a task
-# add_button.config(command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
-# Main loop
 keyword_thread = threading.Thread(target=listen_for_keyword, args=("calendar",), daemon=True)
 keyword_thread.start()
 root.mainloop()
