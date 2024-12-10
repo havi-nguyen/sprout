@@ -89,7 +89,8 @@ def listen_for_keyword(keyword):
 
                 # Trigger the task addition function when "calendar" is heard
                 if keyword.lower() in command:
-                    print("Keyword detected. Listening for 5 seconds...")
+                    todo_entry.insert("Keyword detected. Listening for 5 seconds...")
+                    print("Keyword detected. Listening for 5 seconds...")   
                     start_time = datetime.now()
                     while (datetime.now() - start_time).seconds < 5:
                         try:
@@ -104,6 +105,7 @@ def listen_for_keyword(keyword):
                             print(f"Error with speech recognition service: {e}")
                         except Exception as ex:
                             print(f"Unexpected error: {ex}")
+                    todo_entry.delete(0, tk.END)
                     continue  # Skip to the next iteration of the outer while loop
             except sr.UnknownValueError:
                 print("Sorry, I could not understand the audio.")
