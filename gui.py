@@ -89,7 +89,7 @@ def listen_for_keyword(keyword):
 
                 # Trigger the task addition function when "calendar" is heard
                 if keyword.lower() in command:
-                    # todo_entry.insert("Keyword detected. Listening for 5 seconds...")
+                    todo_entry.insert("Keyword detected. Listening for 5 seconds...")
                     print("Keyword detected. Listening for 5 seconds...")   
                     start_time = datetime.now()
                     while (datetime.now() - start_time).seconds < 5:
