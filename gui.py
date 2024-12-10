@@ -45,26 +45,26 @@ def update_weather():
 
     root.after(60000, update_weather)# Schedule next weather update in 60 seconds
 
-def add_task_with_voice():
-    recognizer = sr.Recognizer()
-    mic = sr.Microphone(device_index=1)
-    # mic = sr.Microphone()
-    with mic as source:
-        todo_entry.delete(0, tk.END)  # Clear existing text
-        todo_entry.insert(0, "Listening...")  # Show feedback
-        recognizer.pause_threshold = 0.8
-        try:
-            audio = recognizer.listen(source, timeout=5)
-            task = recognizer.recognize_google(audio)
-            todo_entry.delete(0, tk.END)  # Clear "Listening..." text
-            todo_entry.insert(0, task)  # Display recognized text
-            add_task(task)  # Add to the to-do list
-        except sr.UnknownValueError:
-            todo_entry.delete(0, tk.END)
-            todo_entry.insert(0, "Could not understand audio")
-        except sr.RequestError:
-            todo_entry.delete(0, tk.END)
-            todo_entry.insert(0, "Network error")
+# def add_task_with_voice():
+#     recognizer = sr.Recognizer()
+#     mic = sr.Microphone(device_index=1)
+#     # mic = sr.Microphone()
+#     with mic as source:
+#         todo_entry.delete(0, tk.END)  # Clear existing text
+#         todo_entry.insert(0, "Listening...")  # Show feedback
+#         recognizer.pause_threshold = 0.8
+#         try:
+#             audio = recognizer.listen(source, timeout=5)
+#             task = recognizer.recognize_google(audio)
+#             todo_entry.delete(0, tk.END)  # Clear "Listening..." text
+#             todo_entry.insert(0, task)  # Display recognized text
+#             add_task(task)  # Add to the to-do list
+#         except sr.UnknownValueError:
+#             todo_entry.delete(0, tk.END)
+#             todo_entry.insert(0, "Could not understand audio")
+#         except sr.RequestError:
+#             todo_entry.delete(0, tk.END)
+#             todo_entry.insert(0, "Network error")
 
 def listen_for_keyword(keyword):
     recognizer = sr.Recognizer()
@@ -89,7 +89,8 @@ def listen_for_keyword(keyword):
 
                 # Trigger the task addition function when "calendar" is heard
                 if keyword.lower() in command:
-                    todo_entry.insert("Keyword detected. Listening for 5 seconds...")
+                    # todo_entry.insert("Keyword detected. Listening for 5 seconds...")
+                    todo_entry.insert(0, "Listening...")
                     print("Keyword detected. Listening for 5 seconds...")   
                     start_time = datetime.now()
                     while (datetime.now() - start_time).seconds < 5:
@@ -194,12 +195,12 @@ todo_entry = tk.Entry(todo_frame, width=int(screen_width/2-20), font=("Comic San
 todo_entry.pack(pady=5)
 
 # Voice-to-text button
-voice_button = tk.Button(todo_frame, text="Add with Voice", font=("Comic Sans MS", 10), bg="#FEC8D8", command=add_task_with_voice)
-voice_button.pack(pady=5)
+# voice_button = tk.Button(todo_frame, text="Add with Voice", font=("Comic Sans MS", 10), bg="#FEC8D8", command=add_task_with_voice)
+# voice_button.pack(pady=5)
 
-# Manual add button
-add_button = tk.Button(todo_frame, text="Add", font=("Comic Sans MS", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
-add_button.pack(pady=5)
+# # Manual add button
+# add_button = tk.Button(todo_frame, text="Add", font=("Comic Sans MS", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
+# add_button.pack(pady=5)
 
 
 canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness=0)
