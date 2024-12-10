@@ -206,9 +206,9 @@ creature_image_index = 0
 
 # Load and rescale the creature images
 creature_images = [
-    tk.PhotoImage(file="creature1.png").subsample(4, 4),
-    tk.PhotoImage(file="creature2.png").subsample(4, 4),
-    tk.PhotoImage(file="creature3.png").subsample(4, 4)
+    tk.PhotoImage(file="creature1.png").subsample(2,2),
+    tk.PhotoImage(file="creature2.png").subsample(2,2),
+    tk.PhotoImage(file="creature3.png").subsample(2,2)
 ]
 
 image_width = creature_images[0].width()
