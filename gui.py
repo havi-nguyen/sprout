@@ -350,7 +350,7 @@ def switch_image_set():
 
     creature_image_index = 0
     canvas.itemconfig(creature, image=creature_images[creature_image_index])
-    root.after(7200000, switch_image_set)  # Switch every 2 hours
+    root.after(20, switch_image_set)  # Switch every 2 hours
 
 switch_image_set()
 
@@ -390,7 +390,7 @@ def display_store():
     store_frame.pack(fill="both", expand=True)
 
     # Add a title for the store
-    store_title = ttk.Label(store_frame, text="Store", font=("Verdana", 30, "bold"), anchor="center", style="TLabel")
+    store_title = ttk.Label(store_frame, text="Radish Pet Store 🍰", font=("Verdana", 30, "bold"), anchor="center", style="TLabel")
     store_title.pack(pady=20)
 
     # Add a frame for items layout
@@ -399,9 +399,9 @@ def display_store():
 
     # Sample items with images and prices
     items = [
-        {"image": "radish_files/creature1.png", "price": "$10.99"},
-        {"image": "radish_files/creature2.png", "price": "$15.49"},
-        {"image": "radish_files/creature3.png", "price": "$20.00"},
+        {"image": "radish_files/cake.png", "caption": "delicious cake!", "cost": "cost: 15 points"},
+        {"image": "radish_files/potion.png", "caption": "sleepy potionzzZ", "cost": "cost: 30 points"},
+        {"image": "radish_files/sponge.png", "caption": "clean your dirty radish!", "cost": "cost: 45 points"}
     ]
 
     # Display items in a grid
@@ -412,8 +412,12 @@ def display_store():
         image_label.image = img  # Keep a reference to avoid garbage collection
         image_label.grid(row=i // 3 * 2, column=i % 3, padx=20, pady=10)
 
+        # Display the caption below the image
+        caption_label = ttk.Label(items_frame, text=item["caption"], font=("Verdana", 10, "italic"))
+        caption_label.grid(row=i * 3 + 1, column=0, padx=20, pady=5)
+
         # Display the price below the image
-        price_label = ttk.Label(items_frame, text=item["price"], font=("Verdana", 12, "bold"))
+        price_label = ttk.Label(items_frame, text=item["cost"], font=("Verdana", 12, "bold"))
         price_label.grid(row=i // 3 * 2 + 1, column=i % 3, padx=20, pady=5)
  
 # Create a frame for the buttons
@@ -441,7 +445,6 @@ weather_label = tk.Label(weather_frame, font=("Verdana", 15, "bold"))
 weather_label.pack()
 update_weather()
 
-
 radish_hungry = 100
 # Update health bar and label in the same row as "Store" and "Items"
 def decrease_health():
@@ -457,7 +460,6 @@ def decrease_health():
 
     root.after(1200000, decrease_health)  # Repeat every 20 minutes 
 
-
 # Radish health bar and label in the button_frame
 health_label = ttk.Label(button_frame, text=f"Health: {radish_hungry}%", font=("Verdana", 12, "bold"))
 health_label.grid(row=0, column=3, padx=10, sticky="w")
@@ -471,6 +473,5 @@ decrease_health()
 
 keyword_thread = threading.Thread(target=listen_for_keyword, args=("calendar",), daemon=True)
 keyword_thread.start()
-
 
 root.mainloop()
