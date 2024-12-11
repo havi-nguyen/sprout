@@ -8,11 +8,12 @@ import re
 
 import nltk
 from nltk.tokenize import word_tokenize
-from nltk import pos_tag, ne_chunk
-from nltk.tree import Tree
+from nltk.tag import pos_tag
+from nltk import Tree
+from nltk.corpus import treebank_chunk
+from nltk.chunk import ne_chunk
 
-
-
+animation_running = True
 
 # Function to update the clock
 def update_time():
@@ -90,10 +91,10 @@ def listen_for_keyword(keyword):
                 # Trigger the task addition function when "calendar" is heard
                 if keyword.lower() in command:
                     # todo_entry.insert("Keyword detected. Listening for 5 seconds...")
-                    todo_entry.insert(0, "Listening...")
-                    print("Keyword detected. Listening for 5 seconds...")   
+                    todo_entry.insert(0, "Listening for 7 seconds...")
+                    print("Keyword detected. Listening for 7 seconds...")   
                     start_time = datetime.now()
-                    while (datetime.now() - start_time).seconds < 5:
+                    while (datetime.now() - start_time).seconds < 10:
                         try:
                             audio = recognizer.listen(source, timeout=5)
                             task_command = recognizer.recognize_google(audio).lower()
@@ -114,35 +115,94 @@ def listen_for_keyword(keyword):
                 print(f"Error with speech recognition service: {e}")
             except Exception as ex:
                 print(f"Unexpected error: {ex}")
-
+#create an object of task: include date, time, and task
+class TaskEntry:
+    def __init__(self, time, date, task,am_pm):
+        self.time = time
+        self.date = date
+        self.task = task
+        self.am_pm = am_pm
 def add_task(task):
     # Use NLTK to identify entities in the task
     tokens = word_tokenize(task)
     tagged = pos_tag(tokens)
     named_entities = ne_chunk(tagged)
-    
+    print(tagged)
+    print(named_entities,type(named_entities),type(named_entities[-1]))
+    new_task = TaskEntry("", "", "", "")
+    #time regex
+    # time = re.search(r'\d{1,2}:\d{2}(?:am|pm)', task,re.IGNORECASE)
+    # if time:
+    #     task = task.replace(time.group(), '').strip()
+    #     new_task.time = time.group()
+    # date=re.search(r'\b(?:\d{1,2}[-/th|st|nd|rd\s.]*)?(January|February|March|April|May|June|July|August|September|October|November|December)?\d{1,4}\b', task,re.IGNORECASE)
+    # if date:
+    #     task = task.replace(date.group(), '').strip()
+    #     new_task.date = date.group()
+    # weekday = re.search(r'\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b', task,re.IGNORECASE)
+    # print(weekday)
+    # if weekday:
+    #     task = task.replace(weekday.group(), '').strip()
+    #     new_task.date = weekday.group()
+    # print('Task:', new_task.task, 'Time:', str(new_task.time), 'Date:', str(new_task.date))
     time_keywords = []
     date_keywords = []
-    
+    am_keywords=[]
+    remove=[]
+    #recognize time and date
     for subtree in named_entities:
-        if isinstance(subtree, nltk.Tree):
-            if subtree.label() == 'TIME':
-                time_keywords.append(" ".join([token for token, pos in subtree.leaves()]))
-            elif subtree.label() == 'DATE':
-                date_keywords.append(" ".join([token for token, pos in subtree.leaves()]))
+        if hasattr(subtree, 'label'):
+             print('yeedeeeee')
+        elif isinstance(subtree, Tree) and subtree.label() == 'DATE':
+            date_keywords.append(" ".join(token for token, pos in subtree.leaves()))
+        elif isinstance(subtree, Tree) and subtree.label() == 'TIME':
+            time_keywords.append(" ".join(token for token, pos in subtree.leaves()))
+    
+    date_pattern = re.compile(r'\b(?:\d{1,2}[/-]?\d{1,2}[/-]?\d{2,4}|'
+                          r'(?:January|February|March|April|May|June|July|August|September|October|November|December)|'
+                          r'(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday))\b', re.IGNORECASE)
+    time_pattern = re.compile(r'\b\d{1,2}', re.IGNORECASE)
+    am_pm= re.compile(r'\b(?:a.m|p.m)\b', re.IGNORECASE)
+    # Extract date and time keywords from the task
+    for match in date_pattern.finditer(task):
+        date_keywords.append(match.group())
+    for match in time_pattern.finditer(task):
+        time_keywords.append(match.group())
+    for match in am_pm.finditer(task):
+        am_keywords.append(match.group())
+    print('Date keywords:', date_keywords)
+    print('Time keywords:', time_keywords)
+    print('AM keywords:', am_keywords)
+    task = task.replace(':', '').strip() 
+            
+    
+   
     
     # Combine all identified keywords
-    all_keywords = date_keywords + time_keywords
+    all_keywords = date_keywords + time_keywords + am_keywords
     for keyword in all_keywords:
         task = task.replace(keyword, '').strip()
-    
+    task = task.replace('.', '').strip() 
+    # new_task.task = task
+    # print('Task:', new_task.task, 'Time:', str(new_task.time), 'Date:', str(new_task.date))
     # Remove identified keywords and their prepositions from the task
     for token, pos in tagged:
         if pos == 'IN':  # 'IN' is the POS tag for prepositions
             task = task.replace(token, '').strip()
+    new_task = TaskEntry("", "", "", "")
+    new_task.task = task
+    new_task.time = time_keywords if len(time_keywords) > 0 else ""
+    new_task.date = date_keywords if len(date_keywords) > 0 else ""
+    new_task.am_pm = am_keywords[0] if len(am_keywords) > 0 else ""
     
     # Format the task label text
-    label_text = " ".join(all_keywords) + "           " + task
+    # label_text = f"{new_task.time}"+ str(' ') + f"{new_task.weekday}"+ str(' ') +f"{new_task.date})"+ str('         ') + f"{new_task.task}"
+    if len(time_keywords)==0:
+        label_text=" ".join(date_keywords) + "    " + task
+    else:
+        label_text = " ".join(date_keywords) + " " + time_keywords[0] + ":" + time_keywords[1] + " " + " ".join(am_keywords) + "    " + task
+
+
     
     task_frame = ttk.Frame(todo_frame, width=int(screen_width/2-40), height=40, padding=5, style="TFrame")
     task_frame.pack(pady=5, anchor='w')  # Align to the left
@@ -156,6 +216,8 @@ def add_task(task):
 def animate_creature_with_images():
     global creature_image_index
 
+    if not animation_running:
+        return 
     # Update the image displayed
     creature_image_index = (creature_image_index + 1) % len(creature_images)
     canvas.itemconfig(creature, image=creature_images[creature_image_index])
@@ -180,27 +242,27 @@ root.title("SPROUT")
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 root.geometry(f"{screen_width}x{screen_height}")
-root.configure(bg="#FFFBF2")  # Set a soft pastel background color
+root.configure(bg="#e9efe7")  # Set a soft pastel background color
 
 # Placeholder for a to-do list frame with similar styling
 todo_frame = ttk.Frame(root, width=screen_width/2-20, height=screen_height-60, padding=10, style="TFrame")
 todo_frame.place(x=screen_width/2+10, y=75)
 
 # To-Do List Label
-todo_label = ttk.Label(todo_frame, text="To-Do List", font=("Comic Sans MS", 12, "bold"))
+todo_label = ttk.Label(todo_frame, text="To-Do List", font=("Verdana", 15, "bold"))
 todo_frame.pack_propagate(False)
 todo_label.pack()
 
-todo_entry = tk.Entry(todo_frame, width=int(screen_width/2-20), font=("Comic Sans MS", 10), bg="#FFFBF2")
+todo_entry = tk.Entry(todo_frame, width=int(screen_width/2-20), font=("Verdana", 15), bg="#FFFBF2")
 todo_entry.pack(pady=5)
 
 # Voice-to-text button
-# voice_button = tk.Button(todo_frame, text="Add with Voice", font=("Comic Sans MS", 10), bg="#FEC8D8", command=add_task_with_voice)
+# voice_button = tk.Button(todo_frame, text="Add with Voice", font=("Verdana", 10), bg="#FEC8D8", command=add_task_with_voice)
 # voice_button.pack(pady=5)
 
 # # Manual add button
-# add_button = tk.Button(todo_frame, text="Add", font=("Comic Sans MS", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
-# add_button.pack(pady=5)
+add_button = tk.Button(todo_frame, text="Add", font=("Verdana", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
+add_button.pack(pady=5)
 
 
 canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness=0)
@@ -209,9 +271,9 @@ creature_image_index = 0
 
 # Load and rescale the creature images
 creature_images = [
-    tk.PhotoImage(file="creature1.png").subsample(2,2),
-    tk.PhotoImage(file="creature2.png").subsample(2,2),
-    tk.PhotoImage(file="creature3.png").subsample(2,2)
+    tk.PhotoImage(file="radish_files/creature1.png").subsample(2,2),
+    tk.PhotoImage(file="radish_files/creature2.png").subsample(2,2),
+    tk.PhotoImage(file="radish_files/creature3.png").subsample(2,2)
 ]
 
 image_width = creature_images[0].width()
@@ -235,8 +297,8 @@ animate_creature_with_images()
 
 # Style settings
 style = ttk.Style()
-style.configure("TFrame", background="#FFE4E1", borderwidth=5, relief="groove")
-style.configure("TLabel", background="#FFE4E1", font=("Comic Sans MS", 15, "bold"))
+style.configure("TFrame", background="#e9efe7", borderwidth=5, relief="groove")
+style.configure("TLabel", background="#FFE4E1", font=("Verdana", 15, "bold"))
 
 # Create a frame with custom colors and rounded corners for the clock
 time_frame = ttk.Frame(root, width=screen_width/2-20, height=40,padding=10, style="TFrame")
@@ -247,13 +309,101 @@ time_label = ttk.Label(time_frame, text="", style="TLabel")
 time_label.pack()
 update_time()
 
+
+def display_store():
+    global animation_running
+
+    # Stop the animation
+    animation_running = False
+
+    # Remove all widgets from the root window
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    # Add a frame for the store layout
+    store_frame = ttk.Frame(root, width=screen_width, height=screen_height, style="TFrame")
+    store_frame.pack(fill="both", expand=True)
+
+    # Add a title for the store
+    store_title = ttk.Label(store_frame, text="Store", font=("Verdana", 30, "bold"), anchor="center", style="TLabel")
+    store_title.pack(pady=20)
+
+    # Add a frame for items layout
+    items_frame = ttk.Frame(store_frame)
+    items_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    # Sample items with images and prices
+    items = [
+        {"image": "radish_files/creature1.png", "price": "$10.99"},
+        {"image": "radish_files/creature2.png", "price": "$15.49"},
+        {"image": "radish_files/creature3.png", "price": "$20.00"},
+    ]
+
+    # Display items in a grid
+    for i, item in enumerate(items):
+        # Load and display the image
+        img = tk.PhotoImage(file=item["image"]).subsample(2, 2)  # Adjust scaling as needed
+        image_label = tk.Label(items_frame, image=img, bg="#e9efe7")
+        image_label.image = img  # Keep a reference to avoid garbage collection
+        image_label.grid(row=i // 3 * 2, column=i % 3, padx=20, pady=10)
+
+        # Display the price below the image
+        price_label = ttk.Label(items_frame, text=item["price"], font=("Verdana", 12, "bold"))
+        price_label.grid(row=i // 3 * 2 + 1, column=i % 3, padx=20, pady=5)
+ 
+# Create a frame for the buttons
+button_frame = ttk.Frame(root, width=screen_width/2-20, height=40, padding=10, style="TFrame")
+button_frame.place(x=20, y=80)  # Place it under the clock
+
+# Configure the grid layout for spacing
+button_frame.columnconfigure(0, weight=1)  # First column for the Store button
+button_frame.columnconfigure(1, weight=1)  # Second column (empty) for spacing
+button_frame.columnconfigure(2, weight=1)  # Third column for the Items button
+
+# Add the "Store" button
+store_button = ttk.Button(button_frame, text="Store", command=display_store, style="TLabel")
+store_button.grid(row=0, column=0, padx=10, sticky="e")  # Place the Store button
+
+# Add the "Items" button
+items_button = ttk.Button(button_frame, text="Items", command=lambda: print("Items button clicked"), style="TLabel")
+items_button.grid(row=0, column=2, padx=10, sticky="w")  # Place the Items button
+
 # weather
 weather_frame = ttk.Frame(root, width=screen_width/2-20, height=40, padding=10, style="TFrame")
 weather_frame.place(x=screen_width/2+10, y=20)
 weather_frame.pack_propagate(False)
-weather_label = tk.Label(weather_frame, font=("Comic Sans MS", 15, "bold"))
+weather_label = tk.Label(weather_frame, font=("Verdana", 15, "bold"))
 weather_label.pack()
 update_weather()
+
+radish_hungry = 100
+
+def decrease_health():
+    global radish_hungry
+
+    if radish_hungry > 0:
+        radish_hungry -= 5  # Decrease health by 5
+        health_bar['value'] = radish_hungry
+        health_label.config(text=f"Health: {radish_hungry}%")
+    else:
+        health_label.config(text="Health: 0% (Radish is unhealthy!)")
+        return  # Stop decreasing if health reaches 0
+
+    root.after(2000, decrease_health)  # Repeat every 2 seconds
+
+# Radish health bar
+health_frame = ttk.Frame(root)
+health_frame.place(x=20, y=140)
+
+health_label = ttk.Label(health_frame, text=f"Radish Health: {radish_hungry}%", font=("Verdana", 12, "bold"))
+health_label.pack()
+
+health_bar = ttk.Progressbar(health_frame, orient="horizontal", length=200, mode="determinate")
+health_bar['value'] = radish_hungry
+health_bar.pack()
+
+# Call function to decrease health periodically
+decrease_health()
 
 keyword_thread = threading.Thread(target=listen_for_keyword, args=("calendar",), daemon=True)
 keyword_thread.start()
