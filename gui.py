@@ -200,8 +200,6 @@ def add_task(task):
     else:
         label_text = " ".join(date_keywords) + " " + time_keywords[0] + ":" + time_keywords[1] + " " + " ".join(am_keywords) + "    " + task
 
-
-    
     global task_frame  # Make task_frame accessible outside of this function
     task_frame = ttk.Frame(todo_frame, width=int(screen_width/2-40), height=40, padding=5, style="TFrame")
     task_frame.pack(pady=5, anchor='w')  # Align to the left
@@ -317,6 +315,7 @@ completed_task_images = [
 def play_completed_animation():
     loops_remaining = 2
     current_image_index = 0
+    print("Resuming main animation.")
 
     def update_image():
         nonlocal loops_remaining, current_image_index
@@ -332,7 +331,6 @@ def play_completed_animation():
     global animation_running
     animation_running = False  # Pause main animation
     update_image()
-
 
 # Initialize movement
 animate_creature_with_images.dx = 5  # Adjust speed if needed
