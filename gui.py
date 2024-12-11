@@ -409,11 +409,11 @@ button_frame.columnconfigure(2, weight=1)  # Third column for the Items button
 
 # Add the "Store" button
 store_button = ttk.Button(button_frame, text="Store", command=display_store, style="TLabel")
-store_button.grid(row=0, column=0, padx=10, sticky="e")  # Place the Store button
+store_button.grid(row=0, column=0, padx=5, sticky="e")  # Place the Store button
 
 # Add the "Items" button
 items_button = ttk.Button(button_frame, text="Items", command=lambda: print("Items button clicked"), style="TLabel")
-items_button.grid(row=0, column=2, padx=10, sticky="w")  # Place the Items button
+items_button.grid(row=0, column=2, padx=5, sticky="w")  # Place the Items button
 
 # weather
 weather_frame = ttk.Frame(root, width=screen_width/2-20, height=40, padding=10, style="TFrame")
@@ -446,7 +446,7 @@ health_label.grid(row=0, column=3, padx=10, sticky="w")
 
 health_bar = ttk.Progressbar(button_frame, orient="horizontal", length=200, mode="determinate")
 health_bar['value'] = radish_hungry
-health_bar.grid(row=0, column=4, padx=10, sticky="w")
+health_bar.grid(row=0, column=4, padx=5, sticky="w")
 
 # Call function to decrease health periodically
 decrease_health()
