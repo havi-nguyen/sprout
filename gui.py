@@ -314,9 +314,8 @@ completed_task_images = [
     tk.PhotoImage(file="radish_files/happy3.png").subsample(2, 2)
 ]
 
-# Function to play the alternate animation
 def play_completed_animation():
-    loops_remaining = 2  # Number of loops
+    loops_remaining = 2
     current_image_index = 0
 
     def update_image():
@@ -324,11 +323,11 @@ def play_completed_animation():
         if loops_remaining > 0:
             canvas.itemconfig(creature, image=completed_task_images[current_image_index])
             current_image_index = (current_image_index + 1) % len(completed_task_images)
-            if current_image_index == 0:  # Loop completed
+            if current_image_index == 0:  # Completed one loop
                 loops_remaining -= 1
-            root.after(500, update_image)  # Change image every 500 ms
+            root.after(500, update_image)
         else:
-            resume_main_animation()  # Resume the main animation after completion
+            resume_main_animation()  # Resume main animation after completion
 
     global animation_running
     animation_running = False  # Pause main animation
