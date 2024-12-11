@@ -211,22 +211,22 @@ def add_task(task):
     completed_checkbox.var = completed_var
     completed_checkbox.pack(side='left', padx=(70, 0))  # Add space between text and checkbox
 
-    completed_checkbox.completed_triggered = False
+    completed_checkbox.config(command=lambda: on_task_completed(task_frame, completed_checkbox))
 
     # Add the new task_frame to a list for future reference
     task_frames.append((task_frame, completed_checkbox))
     
-#check if the task is completed
-def check_completed():
-  for task_frame, checkbox in task_frames:
-        if isinstance(checkbox, ttk.Checkbutton):
-            # Get the associated variable from the Checkbutton
-            checkbox_state = checkbox.var.get()  # Access the BooleanVar value
-            if checkbox_state and not checkbox.completed_triggered:  # If checked and not triggered yet
-                checkbox.completed_triggered = True  # Mark as triggered
-                play_completed_animation()  # Start the special animation
+# #check if the task is completed
+# def check_completed():
+#   for task_frame, checkbox in task_frames:
+#         if isinstance(checkbox, ttk.Checkbutton):
+#             # Get the associated variable from the Checkbutton
+#             checkbox_state = checkbox.var.get()  # Access the BooleanVar value
+#             if checkbox_state and not checkbox.completed_triggered:  # If checked and not triggered yet
+#                 checkbox.completed_triggered = True  # Mark as triggered
+#                 play_completed_animation()  # Start the special animation
 
-        root.after(1000, check_completed)  # Continue checking
+#         root.after(1000, check_completed)  # Continue checking
 
 def animate_creature_with_images():
     global creature_image_index
@@ -311,6 +311,14 @@ completed_task_images = [
     tk.PhotoImage(file="radish_files/happy2.png").subsample(2, 2),
     tk.PhotoImage(file="radish_files/happy3.png").subsample(2, 2)
 ]
+
+def on_task_completed(task_frame, checkbox):
+    if checkbox.var.get():  # If the checkbox is checked
+        # Remove the task frame
+        task_frame.destroy()
+
+        # Play the completed animation
+        play_completed_animation()
 
 def play_completed_animation():
     loops_remaining = 2
@@ -448,7 +456,7 @@ health_bar.grid(row=0, column=4, padx=5, sticky="w")
 # Call function to decrease health periodically
 decrease_health()
 
-check_completed()
+# check_completed()
 keyword_thread = threading.Thread(target=listen_for_keyword, args=("calendar",), daemon=True)
 keyword_thread.start()
 # Start a new thread to keep the check_completed function running in the background
