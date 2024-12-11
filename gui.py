@@ -201,7 +201,7 @@ def add_task(task):
     else:
         label_text = " ".join(date_keywords) + " " + time_keywords[0] + ":" + time_keywords[1] + " " + " ".join(am_keywords) + "    " + task
 
-    global task_frame  # Make task_frame accessible outside of this function
+     # Make task_frame accessible outside of this function
     task_frame = ttk.Frame(todo_frame, width=int(screen_width/2-40), height=40, padding=5, style="TFrame")
     task_frame.pack(pady=5, anchor='w')  # Align to the left
     task_label = ttk.Label(task_frame, text=label_text, style="TLabel")
@@ -315,7 +315,9 @@ creature = canvas.create_image(image_width // 2, image_height // 2, image=idle_c
 def on_task_completed(task_frame, checkbox):
     if checkbox.var.get():  # If the checkbox is checked
         # Remove the task frame
-        task_frame.destroy()
+        #wait for 5 seconds before removing the task
+        root.after(2000, lambda: task_frame.destroy())
+        
 
         # Play the completed animation
         play_completed_animation()
