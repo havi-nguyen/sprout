@@ -329,14 +329,14 @@ def display_store():
          # Create a frame to hold the image, caption, and price
         item_frame = ttk.Frame(items_frame)
         item_frame.grid(row=0, column=i, padx=20, pady=20)
-    
+
        # Load and display the image
         image_label = tk.Label(item_frame, image=img, bg="#e9efe7")
         image_label.image = img  # Keep a reference to avoid garbage collection
         image_label.pack()
 
         # Display the caption below the image
-        caption_label = ttk.Label(item_frame, text=item["caption"], font=("Verdana", 10, "italic"), bg="#e9efe7")
+        caption_label = ttk.Label(item_frame, text=item["caption"], font=("Verdana", 10, "italic"))
         caption_label.pack()
 
         # Display the price below the caption
@@ -485,6 +485,7 @@ health_bar.grid(row=0, column=4, padx=5, sticky="w")
 
 # Call function to decrease health periodically
 decrease_health()
+
 
 keyword_thread = threading.Thread(target=listen_for_keyword, args=("calendar",), daemon=True)
 keyword_thread.start()
