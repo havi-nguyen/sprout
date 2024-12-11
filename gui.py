@@ -216,26 +216,14 @@ def add_task(task):
     # Add the new task_frame to a list for future reference
     task_frames.append((task_frame, completed_checkbox))
     
-# #check if the task is completed
-# def check_completed():
-#   for task_frame, checkbox in task_frames:
-#         if isinstance(checkbox, ttk.Checkbutton):
-#             # Get the associated variable from the Checkbutton
-#             checkbox_state = checkbox.var.get()  # Access the BooleanVar value
-#             if checkbox_state and not checkbox.completed_triggered:  # If checked and not triggered yet
-#                 checkbox.completed_triggered = True  # Mark as triggered
-#                 play_completed_animation()  # Start the special animation
-
-#         root.after(1000, check_completed)  # Continue checking
-
 def animate_creature_with_images():
     global creature_image_index
 
     if not animation_running:
         return 
     # Update the image displayed
-    creature_image_index = (creature_image_index + 1) % len(creature_images)
-    canvas.itemconfig(creature, image=creature_images[creature_image_index])
+    creature_image_index = (creature_image_index + 1) % len(idle_creature)
+    canvas.itemconfig(creature, image=idle_creature[creature_image_index])
 
     # Get the current coordinates of the creature (center point)
     x, y = canvas.coords(creature)
@@ -289,28 +277,38 @@ canvas.place(x=10, y=screen_height - 200)
 creature_image_index = 0
 
 # Load and rescale the creature images
-creature_images = [
+idle_creature = [
     tk.PhotoImage(file="radish_files/creature1.png").subsample(2,2),
     tk.PhotoImage(file="radish_files/creature2.png").subsample(2,2),
     tk.PhotoImage(file="radish_files/creature3.png").subsample(2,2)
 ]
-
-image_width = creature_images[0].width()
-image_height = creature_images[0].height()
-
-canvas = tk.Canvas(root, width=image_width, height=image_height, bg="#FFFBF2", highlightthickness=0)
-canvas.place(x=10, y=screen_height - image_height)
-
-# Add the first frame of the creature animation
-creature = canvas.create_image(image_width // 2, image_height // 2, image=creature_images[creature_image_index])
-
-# Animate the creature with images
-# Load and rescale the alternate images for completed task animation
 completed_task_images = [
     tk.PhotoImage(file="radish_files/happy1.png").subsample(2, 2),
     tk.PhotoImage(file="radish_files/happy2.png").subsample(2, 2),
     tk.PhotoImage(file="radish_files/happy3.png").subsample(2, 2)
 ]
+neglected_pet_images = [
+    tk.PhotoImage(file="radish_files/dirty1.png").subsample(2, 2),
+    tk.PhotoImage(file="radish_files/dirty2.png").subsample(2, 2),
+    tk.PhotoImage(file="radish_files/dirty3.png").subsample(2, 2)
+]
+disappointed_images = [
+    tk.PhotoImage(file="radish_files/disappointed1.png").subsample(2, 2),
+    tk.PhotoImage(file="radish_files/disappointed2.png").subsample(2, 2)
+]
+
+current_image_set = 0  # 0 for set_one, 1 for set_two
+creature_image_index = 0  # Index for animation frames
+creature_images = idle_creature;   # Start with the first set
+
+image_width = idle_creature[0].width()
+image_height = idle_creature[0].height()
+
+canvas = tk.Canvas(root, width=image_width, height=image_height, bg="#FFFBF2", highlightthickness=0)
+canvas.place(x=10, y=screen_height - image_height)
+
+# Add the first frame of the creature animation
+creature = canvas.create_image(image_width // 2, image_height // 2, image=idle_creature[creature_image_index])
 
 def on_task_completed(task_frame, checkbox):
     if checkbox.var.get():  # If the checkbox is checked
@@ -340,6 +338,22 @@ def play_completed_animation():
     animation_running = False  # Pause main animation
     update_image()
 
+def switch_image_set():
+    global current_image_set, creature_image_index, creature_images
+
+    if current_image_set == 0:
+        creature_images = idle_creature 
+        current_image_set = 1
+    else:
+        creature_images = neglected_pet_images
+        current_image_set = 0
+
+    creature_image_index = 0
+    canvas.itemconfig(creature, image=creature_images[creature_image_index])
+    root.after(7200000, switch_image_set)  # Switch every 2 hours
+
+switch_image_set()
+
 # Initialize movement
 animate_creature_with_images.dx = 5  # Adjust speed if needed
 animate_creature_with_images.dy = 5
@@ -360,7 +374,6 @@ time_frame.pack_propagate(False)
 time_label = ttk.Label(time_frame, text="", style="TLabel")
 time_label.pack()
 update_time()
-
 
 def display_store():
     global animation_running
@@ -442,7 +455,7 @@ def decrease_health():
         health_label.config(text="Radish Health: 0% (Radish is unhealthy!)")
         return  # Stop decreasing if health reaches 0
 
-    root.after(2000, decrease_health)  # Repeat every 2 seconds
+    root.after(1200000, decrease_health)  # Repeat every 20 minutes 
 
 
 # Radish health bar and label in the button_frame
@@ -456,12 +469,8 @@ health_bar.grid(row=0, column=4, padx=5, sticky="w")
 # Call function to decrease health periodically
 decrease_health()
 
-# check_completed()
 keyword_thread = threading.Thread(target=listen_for_keyword, args=("calendar",), daemon=True)
 keyword_thread.start()
-# Start a new thread to keep the check_completed function running in the background
-# check_completed_thread = threading.Thread(target=check_completed, daemon=True)
-# check_completed_thread.start()
 
 
 root.mainloop()
