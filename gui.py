@@ -365,7 +365,7 @@ animate_creature_with_images()
 
 # Style settings
 style = ttk.Style()
-style.configure("TFrame", background="#aecaa6", borderwidth=5, relief="groove")
+style.configure("TFrame", background="#c4d2bd", borderwidth=5, relief="groove")
 style.configure("TLabel", font=("Verdana", 15, "bold"))
 
 # Create a frame with custom colors and rounded corners for the clock
