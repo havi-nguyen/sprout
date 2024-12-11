@@ -5,6 +5,7 @@ import requests
 import threading
 import speech_recognition as sr
 import re
+from PIL import Image, ImageTk
 
 import nltk
 from nltk.tokenize import word_tokenize
@@ -390,7 +391,7 @@ def display_store():
     store_frame.pack(fill="both", expand=True)
 
     # Add a title for the store
-    store_title = ttk.Label(store_frame, text="Radish Pet Store 🍰", font=("Verdana", 30, "bold"), anchor="center", style="TLabel")
+    store_title = ttk.Label(store_frame, text="Radish Store o.<", font=("Verdana", 30, "bold"), anchor="center", style="TLabel")
     store_title.pack(pady=20)
 
     # Add a frame for items layout
@@ -403,11 +404,16 @@ def display_store():
         {"image": "radish_files/potion.png", "caption": "sleepy potionzzZ", "cost": "cost: 30 points"},
         {"image": "radish_files/sponge.png", "caption": "clean your dirty radish!", "cost": "cost: 45 points"}
     ]
+    image_width, image_height = 100, 100 
 
     # Display items in a grid
     for i, item in enumerate(items):
-        # Load and display the image
-        img = tk.PhotoImage(file=item["image"]).subsample(2, 2)  # Adjust scaling as needed
+        img = Image.open(item["image"])
+        img = img.resize((image_width, image_height))  # Resize to fit
+        img = ImageTk.PhotoImage(img)
+    
+        # # Load and display the image
+        # img = tk.PhotoImage(file=item["image"]).subsample(2, 2)  # Adjust scaling as needed
         image_label = tk.Label(items_frame, image=img, bg="#e9efe7")
         image_label.image = img  # Keep a reference to avoid garbage collection
         image_label.grid(row=i // 3 * 2, column=i % 3, padx=20, pady=10)
