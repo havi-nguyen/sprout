@@ -350,7 +350,7 @@ def switch_image_set():
 
     creature_image_index = 0
     canvas.itemconfig(creature, image=creature_images[creature_image_index])
-    root.after(20, switch_image_set)  # Switch every 2 hours
+    root.after(72,000, switch_image_set)  # Switch every 2 hours
 
 switch_image_set()
 
