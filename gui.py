@@ -432,7 +432,7 @@ def decrease_health():
     if radish_hungry > 0:
         radish_hungry -= 5  # Decrease health by 5
         health_bar['value'] = radish_hungry
-        health_label.config(text=f"Radish Health: {radish_hungry}%")
+        health_label.config(text=f"Health: {radish_hungry}%")
     else:
         health_label.config(text="Radish Health: 0% (Radish is unhealthy!)")
         return  # Stop decreasing if health reaches 0
