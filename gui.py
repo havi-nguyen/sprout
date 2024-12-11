@@ -273,7 +273,7 @@ todo_entry.pack(pady=5)
 # add_button = tk.Button(todo_frame, text="Add", font=("Verdana", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
 # add_button.pack(pady=5)
 
-canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness=0)
+canvas = tk.Canvas(root, width=100, height=100, bg="#FFFFFF", highlightthickness=0)
 canvas.place(x=10, y=screen_height - 200)
 creature_image_index = 0
 
@@ -404,27 +404,30 @@ def display_store():
         {"image": "radish_files/potion.png", "caption": "sleepy potionzzZ", "cost": "cost: 30 points"},
         {"image": "radish_files/sponge.png", "caption": "clean your dirty radish!", "cost": "cost: 45 points"}
     ]
-    image_width, image_height = 100, 100 
+    image_width, image_height = 200, 200 
 
     # Display items in a grid
     for i, item in enumerate(items):
         img = Image.open(item["image"])
         img = img.resize((image_width, image_height))  # Resize to fit
         img = ImageTk.PhotoImage(img)
+
+         # Create a frame to hold the image, caption, and price
+        item_frame = ttk.Frame(items_frame)
+        item_frame.grid(row=0, column=i, padx=20, pady=20)
     
-        # # Load and display the image
-        # img = tk.PhotoImage(file=item["image"]).subsample(2, 2)  # Adjust scaling as needed
-        image_label = tk.Label(items_frame, image=img, bg="#e9efe7")
+       # Load and display the image
+        image_label = tk.Label(item_frame, image=img, bg="#e9efe7")
         image_label.image = img  # Keep a reference to avoid garbage collection
-        image_label.grid(row=i // 3 * 2, column=i % 3, padx=20, pady=10)
+        image_label.pack()
 
         # Display the caption below the image
-        caption_label = ttk.Label(items_frame, text=item["caption"], font=("Verdana", 10, "italic"))
-        caption_label.grid(row=i * 3 + 1, column=0, padx=20, pady=5)
+        caption_label = ttk.Label(item_frame, text=item["caption"], font=("Verdana", 10, "italic"))
+        caption_label.pack()
 
-        # Display the price below the image
-        price_label = ttk.Label(items_frame, text=item["cost"], font=("Verdana", 12, "bold"))
-        price_label.grid(row=i // 3 * 2 + 1, column=i % 3, padx=20, pady=5)
+        # Display the price below the caption
+        price_label = ttk.Label(item_frame, text=item["cost"], font=("Verdana", 12, "bold"))
+        price_label.pack()
  
 # Create a frame for the buttons
 button_frame = ttk.Frame(root, width=screen_width/2-20, height=40, padding=10, style="TFrame")
