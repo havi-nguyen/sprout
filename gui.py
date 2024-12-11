@@ -251,7 +251,7 @@ root.title("SPROUT")
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 root.geometry(f"{screen_width}x{screen_height}")
-root.configure(bg="#e9efe7")  # Set a soft pastel background color
+root.configure(bg="#FFFFFF")  
 
 # Placeholder for a to-do list frame with similar styling
 todo_frame = ttk.Frame(root, width=screen_width/2-20, height=screen_height-60, padding=10, style="TFrame")
@@ -273,7 +273,7 @@ todo_entry.pack(pady=5)
 # add_button = tk.Button(todo_frame, text="Add", font=("Verdana", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
 # add_button.pack(pady=5)
 
-canvas = tk.Canvas(root, width=100, height=100, bg="#FFFFFF", highlightthickness=0)
+canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness=0)
 canvas.place(x=10, y=screen_height - 200)
 creature_image_index = 0
 
