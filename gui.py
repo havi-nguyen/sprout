@@ -336,7 +336,7 @@ def display_store():
         image_label.pack()
 
         # Display the caption below the image
-        caption_label = ttk.Label(item_frame, text=item["caption"], font=("Verdana", 10, "italic"))
+        caption_label = ttk.Label(item_frame, text=item["caption"], font=("Verdana", 10, "italic"), bg="#e9efe7")
         caption_label.pack()
 
         # Display the price below the caption
