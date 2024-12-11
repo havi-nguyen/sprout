@@ -245,6 +245,116 @@ def resume_main_animation():
     global animation_running
     animation_running = True
     animate_creature_with_images()  # Restart the main animation
+    
+def on_task_completed(task_frame, checkbox):
+    if checkbox.var.get():  # If the checkbox is checked
+        # Remove the task frame
+        #wait for 5 seconds before removing the task
+        root.after(2000, lambda: task_frame.destroy())
+        
+
+        # Play the completed animation
+        play_completed_animation()
+
+def play_completed_animation():
+    loops_remaining = 2
+    current_image_index = 0
+    print("Resuming main animation.")
+
+    def update_image():
+        nonlocal loops_remaining, current_image_index
+        if loops_remaining > 0:
+            canvas.itemconfig(creature, image=completed_task_images[current_image_index])
+            current_image_index = (current_image_index + 1) % len(completed_task_images)
+            if current_image_index == 0:  # Completed one loop
+                loops_remaining -= 1
+            root.after(500, update_image)
+        else:
+            resume_main_animation()  # Resume main animation after completion
+
+    global animation_running
+    animation_running = False  # Pause main animation
+    update_image()
+
+def switch_image_set():
+    global current_image_set, creature_image_index, creature_images
+
+    if current_image_set == 0:
+        creature_images = idle_creature 
+        current_image_set = 1
+    else:
+        creature_images = neglected_pet_images
+        current_image_set = 0
+
+    creature_image_index = 0
+    canvas.itemconfig(creature, image=creature_images[creature_image_index])
+    root.after(72,000, switch_image_set)  # Switch every 2 hours
+    
+def display_store():
+    global animation_running
+
+    # Stop the animation
+    animation_running = False
+
+    # Remove all widgets from the root window
+    for widget in root.winfo_children():
+        widget.destroy()
+
+    # Add a frame for the store layout
+    store_frame = ttk.Frame(root, width=screen_width, height=screen_height, style="TFrame")
+    store_frame.pack(fill="both", expand=True)
+
+    # Add a title for the store
+    store_title = ttk.Label(store_frame, text="Radish Store o.<", font=("Verdana", 30, "bold"), anchor="center", style="TLabel")
+    store_title.pack(pady=20)
+
+    # Add a frame for items layout
+    items_frame = ttk.Frame(store_frame)
+    items_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    # Sample items with images and prices
+    items = [
+        {"image": "radish_files/cake.png", "caption": "delicious cake!", "cost": "cost: 15 points"},
+        {"image": "radish_files/potion.png", "caption": "sleepy potionzzZ", "cost": "cost: 30 points"},
+        {"image": "radish_files/sponge.png", "caption": "clean your dirty radish!", "cost": "cost: 45 points"}
+    ]
+    image_width, image_height = 200, 200 
+
+    # Display items in a grid
+    for i, item in enumerate(items):
+        img = Image.open(item["image"])
+        img = img.resize((image_width, image_height))  # Resize to fit
+        img = ImageTk.PhotoImage(img)
+
+         # Create a frame to hold the image, caption, and price
+        item_frame = ttk.Frame(items_frame)
+        item_frame.grid(row=0, column=i, padx=20, pady=20)
+    
+       # Load and display the image
+        image_label = tk.Label(item_frame, image=img, bg="#e9efe7")
+        image_label.image = img  # Keep a reference to avoid garbage collection
+        image_label.pack()
+
+        # Display the caption below the image
+        caption_label = ttk.Label(item_frame, text=item["caption"], font=("Verdana", 10, "italic"))
+        caption_label.pack()
+
+        # Display the price below the caption
+        price_label = ttk.Label(item_frame, text=item["cost"], font=("Verdana", 12, "bold"))
+        price_label.pack()
+ 
+def decrease_health():
+    global radish_hungry
+
+    if radish_hungry > 0:
+        radish_hungry -= 5  # Decrease health by 5
+        health_bar['value'] = radish_hungry
+        health_label.config(text=f"Health: {radish_hungry}%")
+    else:
+        health_label.config(text="Radish Health: 0% (Radish is unhealthy!)")
+        return  # Stop decreasing if health reaches 0
+
+    root.after(1200000, decrease_health)  # Repeat every 20 minutes 
 
 root = tk.Tk()
 root.title("SPROUT")
@@ -312,49 +422,7 @@ canvas.place(x=10, y=screen_height - image_height)
 # Add the first frame of the creature animation
 creature = canvas.create_image(image_width // 2, image_height // 2, image=idle_creature[creature_image_index])
 
-def on_task_completed(task_frame, checkbox):
-    if checkbox.var.get():  # If the checkbox is checked
-        # Remove the task frame
-        #wait for 5 seconds before removing the task
-        root.after(2000, lambda: task_frame.destroy())
-        
 
-        # Play the completed animation
-        play_completed_animation()
-
-def play_completed_animation():
-    loops_remaining = 2
-    current_image_index = 0
-    print("Resuming main animation.")
-
-    def update_image():
-        nonlocal loops_remaining, current_image_index
-        if loops_remaining > 0:
-            canvas.itemconfig(creature, image=completed_task_images[current_image_index])
-            current_image_index = (current_image_index + 1) % len(completed_task_images)
-            if current_image_index == 0:  # Completed one loop
-                loops_remaining -= 1
-            root.after(500, update_image)
-        else:
-            resume_main_animation()  # Resume main animation after completion
-
-    global animation_running
-    animation_running = False  # Pause main animation
-    update_image()
-
-def switch_image_set():
-    global current_image_set, creature_image_index, creature_images
-
-    if current_image_set == 0:
-        creature_images = idle_creature 
-        current_image_set = 1
-    else:
-        creature_images = neglected_pet_images
-        current_image_set = 0
-
-    creature_image_index = 0
-    canvas.itemconfig(creature, image=creature_images[creature_image_index])
-    root.after(72,000, switch_image_set)  # Switch every 2 hours
 
 switch_image_set()
 
@@ -379,59 +447,6 @@ time_label = ttk.Label(time_frame, text="", style="TLabel")
 time_label.pack()
 update_time()
 
-def display_store():
-    global animation_running
-
-    # Stop the animation
-    animation_running = False
-
-    # Remove all widgets from the root window
-    for widget in root.winfo_children():
-        widget.destroy()
-
-    # Add a frame for the store layout
-    store_frame = ttk.Frame(root, width=screen_width, height=screen_height, style="TFrame")
-    store_frame.pack(fill="both", expand=True)
-
-    # Add a title for the store
-    store_title = ttk.Label(store_frame, text="Radish Store o.<", font=("Verdana", 30, "bold"), anchor="center", style="TLabel")
-    store_title.pack(pady=20)
-
-    # Add a frame for items layout
-    items_frame = ttk.Frame(store_frame)
-    items_frame.pack(fill="both", expand=True, padx=20, pady=20)
-
-    # Sample items with images and prices
-    items = [
-        {"image": "radish_files/cake.png", "caption": "delicious cake!", "cost": "cost: 15 points"},
-        {"image": "radish_files/potion.png", "caption": "sleepy potionzzZ", "cost": "cost: 30 points"},
-        {"image": "radish_files/sponge.png", "caption": "clean your dirty radish!", "cost": "cost: 45 points"}
-    ]
-    image_width, image_height = 200, 200 
-
-    # Display items in a grid
-    for i, item in enumerate(items):
-        img = Image.open(item["image"])
-        img = img.resize((image_width, image_height))  # Resize to fit
-        img = ImageTk.PhotoImage(img)
-
-         # Create a frame to hold the image, caption, and price
-        item_frame = ttk.Frame(items_frame)
-        item_frame.grid(row=0, column=i, padx=20, pady=20)
-    
-       # Load and display the image
-        image_label = tk.Label(item_frame, image=img, bg="#e9efe7")
-        image_label.image = img  # Keep a reference to avoid garbage collection
-        image_label.pack()
-
-        # Display the caption below the image
-        caption_label = ttk.Label(item_frame, text=item["caption"], font=("Verdana", 10, "italic"))
-        caption_label.pack()
-
-        # Display the price below the caption
-        price_label = ttk.Label(item_frame, text=item["cost"], font=("Verdana", 12, "bold"))
-        price_label.pack()
- 
 # Create a frame for the buttons
 button_frame = ttk.Frame(root, width=screen_width/2-20, height=40, padding=10, style="TFrame")
 button_frame.place(x=20, y=80)  # Place it under the clock
@@ -446,8 +461,8 @@ store_button = ttk.Button(button_frame, text="Store", command=display_store, sty
 store_button.grid(row=0, column=0, padx=5, sticky="e")  # Place the Store button
 
 # Add the "Items" button
-items_button = ttk.Button(button_frame, text="Items", command=lambda: print("Items button clicked"), style="TLabel")
-items_button.grid(row=0, column=2, padx=5, sticky="w")  # Place the Items button
+# items_button = ttk.Button(button_frame, text="Items", command=lambda: print("Items button clicked"), style="TLabel")
+# items_button.grid(row=0, column=2, padx=5, sticky="w")  # Place the Items button
 
 # weather
 weather_frame = ttk.Frame(root, width=screen_width/2-20, height=40, padding=10, style="TFrame")
@@ -459,18 +474,6 @@ update_weather()
 
 radish_hungry = 100
 # Update health bar and label in the same row as "Store" and "Items"
-def decrease_health():
-    global radish_hungry
-
-    if radish_hungry > 0:
-        radish_hungry -= 5  # Decrease health by 5
-        health_bar['value'] = radish_hungry
-        health_label.config(text=f"Health: {radish_hungry}%")
-    else:
-        health_label.config(text="Radish Health: 0% (Radish is unhealthy!)")
-        return  # Stop decreasing if health reaches 0
-
-    root.after(1200000, decrease_health)  # Repeat every 20 minutes 
 
 # Radish health bar and label in the button_frame
 health_label = ttk.Label(button_frame, text=f"Health: {radish_hungry}%", font=("Verdana", 12, "bold"))
