@@ -441,7 +441,7 @@ def decrease_health():
 
 
 # Radish health bar and label in the button_frame
-health_label = ttk.Label(button_frame, text=f"Radish Health: {radish_hungry}%", font=("Verdana", 12, "bold"))
+health_label = ttk.Label(button_frame, text=f"Health: {radish_hungry}%", font=("Verdana", 12, "bold"))
 health_label.grid(row=0, column=3, padx=10, sticky="w")
 
 health_bar = ttk.Progressbar(button_frame, orient="horizontal", length=200, mode="determinate")
