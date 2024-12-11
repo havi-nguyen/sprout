@@ -14,6 +14,8 @@ from nltk.corpus import treebank_chunk
 from nltk.chunk import ne_chunk
 
 animation_running = True
+global task_frames
+task_frames = []
 
 # Function to update the clock
 def update_time():
@@ -174,10 +176,6 @@ def add_task(task):
     print('Time keywords:', time_keywords)
     print('AM keywords:', am_keywords)
     task = task.replace(':', '').strip() 
-            
-    
-   
-    
     # Combine all identified keywords
     all_keywords = date_keywords + time_keywords + am_keywords
     for keyword in all_keywords:
@@ -204,6 +202,7 @@ def add_task(task):
 
 
     
+    global task_frame  # Make task_frame accessible outside of this function
     task_frame = ttk.Frame(todo_frame, width=int(screen_width/2-40), height=40, padding=5, style="TFrame")
     task_frame.pack(pady=5, anchor='w')  # Align to the left
     task_label = ttk.Label(task_frame, text=label_text, style="TLabel")
@@ -211,7 +210,25 @@ def add_task(task):
     # Add a checkbox to mark the task as completed
     completed_var = tk.BooleanVar()
     completed_checkbox = ttk.Checkbutton(task_frame, variable=completed_var)
-    completed_checkbox.pack(side='left', padx=(30, 0))  # Add space between text and checkbox
+    completed_checkbox.var = completed_var
+    completed_checkbox.pack(side='left', padx=(70, 0))  # Add space between text and checkbox
+
+    completed_checkbox.completed_triggered = False
+
+    # Add the new task_frame to a list for future reference
+    task_frames.append((task_frame, completed_checkbox))
+    
+#check if the task is completed
+def check_completed():
+  for task_frame, checkbox in task_frames:
+        if isinstance(checkbox, ttk.Checkbutton):
+            # Get the associated variable from the Checkbutton
+            checkbox_state = checkbox.var.get()  # Access the BooleanVar value
+            if checkbox_state and not checkbox.completed_triggered:  # If checked and not triggered yet
+                checkbox.completed_triggered = True  # Mark as triggered
+                play_completed_animation()  # Start the special animation
+
+        root.after(1000, check_completed)  # Continue checking
 
 def animate_creature_with_images():
     global creature_image_index
@@ -237,6 +254,11 @@ def animate_creature_with_images():
     # Schedule the next frame
     root.after(1300, animate_creature_with_images)
 
+def resume_main_animation():
+    global animation_running
+    animation_running = True
+    animate_creature_with_images()  # Restart the main animation
+
 root = tk.Tk()
 root.title("SPROUT")
 screen_width = root.winfo_screenwidth()
@@ -260,10 +282,9 @@ todo_entry.pack(pady=5)
 # voice_button = tk.Button(todo_frame, text="Add with Voice", font=("Verdana", 10), bg="#FEC8D8", command=add_task_with_voice)
 # voice_button.pack(pady=5)
 
-# # Manual add button
-add_button = tk.Button(todo_frame, text="Add", font=("Verdana", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
-add_button.pack(pady=5)
-
+# # # Manual add button
+# add_button = tk.Button(todo_frame, text="Add", font=("Verdana", 10), bg="#FEC8D8", command=lambda: [add_task(todo_entry.get()), todo_entry.delete(0, tk.END)])
+# add_button.pack(pady=5)
 
 canvas = tk.Canvas(root, width=100, height=100, bg="#FFFBF2", highlightthickness=0)
 canvas.place(x=10, y=screen_height - 200)
@@ -286,6 +307,32 @@ canvas.place(x=10, y=screen_height - image_height)
 creature = canvas.create_image(image_width // 2, image_height // 2, image=creature_images[creature_image_index])
 
 # Animate the creature with images
+# Load and rescale the alternate images for completed task animation
+completed_task_images = [
+    tk.PhotoImage(file="radish_files/happy1.png").subsample(2, 2),
+    tk.PhotoImage(file="radish_files/happy2.png").subsample(2, 2),
+    tk.PhotoImage(file="radish_files/happy3.png").subsample(2, 2)
+]
+
+# Function to play the alternate animation
+def play_completed_animation():
+    loops_remaining = 2  # Number of loops
+    current_image_index = 0
+
+    def update_image():
+        nonlocal loops_remaining, current_image_index
+        if loops_remaining > 0:
+            canvas.itemconfig(creature, image=completed_task_images[current_image_index])
+            current_image_index = (current_image_index + 1) % len(completed_task_images)
+            if current_image_index == 0:  # Loop completed
+                loops_remaining -= 1
+            root.after(500, update_image)  # Change image every 500 ms
+        else:
+            resume_main_animation()  # Resume the main animation after completion
+
+    global animation_running
+    animation_running = False  # Pause main animation
+    update_image()
 
 
 # Initialize movement
@@ -376,35 +423,40 @@ weather_label = tk.Label(weather_frame, font=("Verdana", 15, "bold"))
 weather_label.pack()
 update_weather()
 
-radish_hungry = 100
 
+radish_hungry = 100
+# Update health bar and label in the same row as "Store" and "Items"
 def decrease_health():
     global radish_hungry
 
     if radish_hungry > 0:
         radish_hungry -= 5  # Decrease health by 5
         health_bar['value'] = radish_hungry
-        health_label.config(text=f"Health: {radish_hungry}%")
+        health_label.config(text=f"Radish Health: {radish_hungry}%")
     else:
-        health_label.config(text="Health: 0% (Radish is unhealthy!)")
+        health_label.config(text="Radish Health: 0% (Radish is unhealthy!)")
         return  # Stop decreasing if health reaches 0
 
     root.after(2000, decrease_health)  # Repeat every 2 seconds
 
-# Radish health bar
-health_frame = ttk.Frame(root)
-health_frame.place(x=20, y=140)
 
-health_label = ttk.Label(health_frame, text=f"Radish Health: {radish_hungry}%", font=("Verdana", 12, "bold"))
-health_label.pack()
+# Radish health bar and label in the button_frame
+health_label = ttk.Label(button_frame, text=f"Radish Health: {radish_hungry}%", font=("Verdana", 12, "bold"))
+health_label.grid(row=0, column=3, padx=10, sticky="w")
 
-health_bar = ttk.Progressbar(health_frame, orient="horizontal", length=200, mode="determinate")
+health_bar = ttk.Progressbar(button_frame, orient="horizontal", length=200, mode="determinate")
 health_bar['value'] = radish_hungry
-health_bar.pack()
+health_bar.grid(row=0, column=4, padx=10, sticky="w")
 
 # Call function to decrease health periodically
 decrease_health()
 
+check_completed()
 keyword_thread = threading.Thread(target=listen_for_keyword, args=("calendar",), daemon=True)
 keyword_thread.start()
+# Start a new thread to keep the check_completed function running in the background
+# check_completed_thread = threading.Thread(target=check_completed, daemon=True)
+# check_completed_thread.start()
+
+
 root.mainloop()
